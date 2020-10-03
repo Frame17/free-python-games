@@ -1,20 +1,11 @@
-"""Pacman, classic arcade game.
-
-Exercises
-
-1. Change the board.
-2. Change the number of ghosts.
-3. Change where pacman starts.
-
-"""
-
 from turtle import *
 from freegames import floor, vector
+import random
 
 path = Turtle(visible=False)
 writer = Turtle(visible=False)
 aim = vector(5, 0)
-pacman = vector(-40, -80)
+pacman = None
 tiles = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
@@ -77,6 +68,7 @@ def valid(point):
 
 
 def world():
+    global pacman
     "Draw world using path."
     bgcolor('black')
     path.color('blue')
@@ -92,7 +84,16 @@ def world():
             if tile == 1:
                 path.up()
                 path.goto(x + 10, y + 10)
-                path.dot(2, 'white')
+
+    pac_x, pac_y = random_init()
+    pacman = vector(pac_x, pac_y)
+
+    can_x, can_y = random_init()
+    while can_x == pac_x and can_y == pac_y:        # reinit in case of collision
+        can_x, can_y = random_init()
+    path.up()
+    path.goto(can_x + 10, can_y + 10)
+    path.dot(5, 'white')
 
 
 def move():
@@ -128,11 +129,22 @@ def change(x, y):
         aim.y = y
 
 
+def random_init():
+    candy_pos = random.randint(0, len(tiles) + 1)
+    if tiles[candy_pos] == 0:
+        while tiles[candy_pos] != 1:
+            candy_pos = (candy_pos + 1) % len(tiles)
+
+    # complex high-level mathematics
+    x = (candy_pos % 20) * 20 - 200
+    y = 180 - (candy_pos // 20) * 20
+    return x, y
+
+
 setup(420, 420, 370, 0)
 hideturtle()
 tracer(False)
 writer.goto(160, 160)
-writer.color('white')
 listen()
 onkey(lambda: change(5, 0), 'Right')
 onkey(lambda: change(-5, 0), 'Left')
