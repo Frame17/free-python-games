@@ -11,7 +11,6 @@ Exercises
 from turtle import *
 from freegames import floor, vector
 
-state = {'score': 0}
 path = Turtle(visible=False)
 writer = Turtle(visible=False)
 aim = vector(5, 0)
@@ -99,7 +98,6 @@ def world():
 def move():
     "Move pacman"
     writer.undo()
-    writer.write(state['score'])
 
     clear()
 
@@ -110,7 +108,6 @@ def move():
 
     if tiles[index] == 1:
         tiles[index] = 2
-        state['score'] += 1
         x = (index % 20) * 20 - 200
         y = 180 - (index // 20) * 20
         square(x, y)
@@ -136,7 +133,6 @@ hideturtle()
 tracer(False)
 writer.goto(160, 160)
 writer.color('white')
-writer.write(state['score'])
 listen()
 onkey(lambda: change(5, 0), 'Right')
 onkey(lambda: change(-5, 0), 'Left')
