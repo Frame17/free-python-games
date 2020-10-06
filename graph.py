@@ -111,17 +111,6 @@ class Graph:
         :param target: point with a prize
         :return: list of path indexes that were lead from root to the target
         """
-        # if visited is None:
-        #     visited = set()
-        #     self.path = []
-        #
-        # if start != target:
-        #     self.path.append(start)
-        #
-        # visited.add(start)
-        #
-        # for next_index in set(self.graph[start]) - visited:
-        #     self.DFS(next_index, target, visited)
         path = []
         q = [start]
         while q:
@@ -210,23 +199,14 @@ def print_path(path):
 
 
 if __name__ == '__main__':
-    # path = [52, 32,72,31,33,71,73,92,30,34,70,74,112]
-    # next = 29
-    #
-    # if not is_acceptable(path[len(path) - 1], next):
-    #     add_back_road(path, next)
-    #
-    # path.append(next)
-    #
-    # print(path)
 
     g = Graph(tiles)
     #
     roads = get_roads(tiles)
     #
     # # 52, 161 for testing perpose
-    starting_point = 84 # random.choice(roads)
-    prize = 86 # random.choice(roads)
+    starting_point = random.choice(roads)
+    prize = random.choice(roads)
     #
     path = g.BFS(starting_point, prize)
     print(f"BFS path({len(path)} steps) from starting point {starting_point} to target point {prize}:")
