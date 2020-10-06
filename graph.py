@@ -153,7 +153,7 @@ class Graph:
             current = node[1][len(node[1]) - 1]
 
             if target in node[1]:
-                return node[1], node[0]
+                return node[1]
 
             cost = node[0]
             for neighbor in self.graph[current]:
@@ -163,7 +163,7 @@ class Graph:
                     temp.append(neighbor)
                     queue.put((cost + default_cost, temp))
 
-        return None, 0
+        return None
 
 
 tiles = [
@@ -232,14 +232,14 @@ if __name__ == '__main__':
     print(f"BFS path({len(path)} steps) from starting point {starting_point} to target point {prize}:")
     print_path(path)
 
-    # print("----")
-    #
-    # path = g.DFS(starting_point, prize)
-    # print(f"DFS path({len(path)} steps) from starting point {starting_point} to target point {prize}:")
-    # print_path(path)
-    #
-    # print("----")
-    #
-    # path, cost = g.UCS(starting_point, prize)
-    # print(f"UCS path({len(path)} steps, cost = {cost}) from starting point {starting_point} to target point {prize}:")
-    # print_path(path)
+    print("----")
+
+    path = g.DFS(starting_point, prize)
+    print(f"DFS path({len(path)} steps) from starting point {starting_point} to target point {prize}:")
+    print_path(path)
+
+    print("----")
+
+    path = g.UCS(starting_point, prize)
+    print(f"UCS path({len(path)} steps, cost = {len(path) - 1}) from starting point {starting_point} to target point {prize}:")
+    print_path(path)

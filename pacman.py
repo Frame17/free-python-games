@@ -98,7 +98,7 @@ def world():
     path.dot(5, 'white')
 
     g = Graph(tiles)
-    way = g.DFS(pac_raw, can_raw)
+    way = g.UCS(pac_raw, can_raw)
     return way
 
 
@@ -144,4 +144,4 @@ for next in way[1:]:
     elif next > prev:
         move(vector(0, -20))
     prev = next
-    time.sleep(0.1)
+    time.sleep(0.5)
