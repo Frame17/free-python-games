@@ -98,7 +98,7 @@ def world():
     path.dot(5, 'white')
 
     g = Graph(tiles)
-    way = g.DFS(pac_raw, can_raw)
+    way = g.BFS(pac_raw, can_raw)
     return way
 
 
@@ -115,7 +115,6 @@ def move(way):
     dot(20, 'yellow')
 
     update()
-
 
 def random_init():
     raw_pos = random.randint(0, len(tiles))

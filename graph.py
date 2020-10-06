@@ -103,7 +103,7 @@ class Graph:
         while q:
             v = q.pop(0)
             if v not in path:
-                path = path + [v]
+                path.append(v)
                 if v == target:
                     return path
                 q = self.graph[v] + q
@@ -120,6 +120,7 @@ class Graph:
         default_cost = 1
         queue = Q.PriorityQueue()
         queue.put((0, [start]))
+        visited = set()
 
         while not queue.empty():
             node = queue.get()
@@ -130,9 +131,11 @@ class Graph:
 
             cost = node[0]
             for neighbor in self.graph[current]:
-                temp = node[1][:]
-                temp.append(neighbor)
-                queue.put((cost + default_cost, temp))
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    temp = node[1][:]
+                    temp.append(neighbor)
+                    queue.put((cost + default_cost, temp))
 
         return None, 0
 
@@ -185,6 +188,7 @@ if __name__ == '__main__':
 
     roads = get_roads(tiles)
 
+    # 52, 161 for testing perpose
     starting_point = random.choice(roads)
     prize = random.choice(roads)
 
