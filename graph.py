@@ -95,7 +95,7 @@ class Graph:
                 if neighbour not in visited:
                     visited.add(neighbour)
                     queue.append(neighbour)
-                    if len(self.graph[vertex]) > 2 and not is_acceptable(path[len(path) - 1], neighbour):
+                    if not is_acceptable(path[len(path) - 1], neighbour):
                         add_back_road(path, neighbour)
                     path.append(neighbour)
                     # target reached
@@ -225,8 +225,8 @@ if __name__ == '__main__':
     roads = get_roads(tiles)
     #
     # # 52, 161 for testing perpose
-    starting_point = random.choice(roads)
-    prize = random.choice(roads)
+    starting_point = 84 # random.choice(roads)
+    prize = 86 # random.choice(roads)
     #
     path = g.BFS(starting_point, prize)
     print(f"BFS path({len(path)} steps) from starting point {starting_point} to target point {prize}:")
