@@ -4,6 +4,27 @@ import random
 import queue as Q
 
 
+def is_acceptable(current, next):
+    """
+    check if the next tile is acceptable from the current in 1 step
+    :param current: current tile
+    :param next: next tile
+    :return: boolean
+    """
+    return abs(current-next) == 20 or abs(current-next) == 1
+
+
+def add_back_road(path, tile):
+    """
+    return to the tile that is acceptable from the tile
+    :param path: list of indexes
+    :param tile: next tile index
+    """
+    i = len(path)-1
+    while not is_acceptable(path[i], tile) or i <= 0:
+        path.append(path[i-1])
+        i -= 1
+
 # This class represents a directed graph
 # using adjacency list representation
 class Graph:
@@ -73,6 +94,8 @@ class Graph:
                 if neighbour not in visited:
                     visited.add(neighbour)
                     queue.append(neighbour)
+                    if not is_acceptable(path[len(path)-1], neighbour):
+                        add_back_road(path, neighbour)
                     path.append(neighbour)
                     # target reached
                     if neighbour == target:
@@ -184,26 +207,38 @@ def print_path(path):
 
 if __name__ == '__main__':
 
+
+    # path = [52, 32,72,31,33,71,73,92,30,34,70,74,112]
+    # next = 29
+    #
+    # if not is_acceptable(path[len(path) - 1], next):
+    #     add_back_road(path, next)
+    #
+    # path.append(next)
+    #
+    # print(path)
+
+
     g = Graph(tiles)
 
     roads = get_roads(tiles)
 
     # 52, 161 for testing perpose
-    starting_point = random.choice(roads)
-    prize = random.choice(roads)
+    starting_point = 52 # random.choice(roads)
+    prize = 161 # random.choice(roads)
 
     path = g.BFS(starting_point, prize)
     print(f"BFS path({len(path)} steps) from starting point {starting_point} to target point {prize}:")
     print_path(path)
 
-    print("----")
-
-    path = g.DFS(starting_point, prize)
-    print(f"DFS path({len(path)} steps) from starting point {starting_point} to target point {prize}:")
-    print_path(path)
-
-    print("----")
-
-    path, cost = g.UCS(starting_point, prize)
-    print(f"UCS path({len(path)} steps, cost = {cost}) from starting point {starting_point} to target point {prize}:")
-    print_path(path)
+    # print("----")
+    #
+    # path = g.DFS(starting_point, prize)
+    # print(f"DFS path({len(path)} steps) from starting point {starting_point} to target point {prize}:")
+    # print_path(path)
+    #
+    # print("----")
+    #
+    # path, cost = g.UCS(starting_point, prize)
+    # print(f"UCS path({len(path)} steps, cost = {cost}) from starting point {starting_point} to target point {prize}:")
+    # print_path(path)
