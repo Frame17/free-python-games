@@ -21,7 +21,7 @@ def add_back_road(path, tile):
     :param tile: next tile index
     """
     i = len(path)-1
-    while not is_acceptable(path[i], tile) or i <= 0:
+    while not is_acceptable(path[i], tile):
         path.append(path[i-1])
         i -= 1
 
@@ -126,6 +126,8 @@ class Graph:
         while q:
             v = q.pop(0)
             if v not in path:
+                if len(path) > 1 and not is_acceptable(path[len(path) - 1], v):
+                    add_back_road(path, v)
                 path.append(v)
                 if v == target:
                     return path
@@ -220,25 +222,25 @@ if __name__ == '__main__':
 
 
     g = Graph(tiles)
-
+    #
     roads = get_roads(tiles)
+    #
+    # # 52, 161 for testing perpose
+    starting_point = random.choice(roads)
+    prize = random.choice(roads)
+    #
+    # path = g.BFS(starting_point, prize)
+    # print(f"BFS path({len(path)} steps) from starting point {starting_point} to target point {prize}:")
+    # print_path(path)
 
-    # 52, 161 for testing perpose
-    starting_point = 52 # random.choice(roads)
-    prize = 161 # random.choice(roads)
+    print("----")
 
-    path = g.BFS(starting_point, prize)
-    print(f"BFS path({len(path)} steps) from starting point {starting_point} to target point {prize}:")
+    path = g.DFS(starting_point, prize)
+    print(f"DFS path({len(path)} steps) from starting point {starting_point} to target point {prize}:")
     print_path(path)
 
-    # print("----")
-    #
-    # path = g.DFS(starting_point, prize)
-    # print(f"DFS path({len(path)} steps) from starting point {starting_point} to target point {prize}:")
-    # print_path(path)
-    #
-    # print("----")
-    #
-    # path, cost = g.UCS(starting_point, prize)
-    # print(f"UCS path({len(path)} steps, cost = {cost}) from starting point {starting_point} to target point {prize}:")
-    # print_path(path)
+    print("----")
+
+    path, cost = g.UCS(starting_point, prize)
+    print(f"UCS path({len(path)} steps, cost = {cost}) from starting point {starting_point} to target point {prize}:")
+    print_path(path)
