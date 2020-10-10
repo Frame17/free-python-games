@@ -157,6 +157,24 @@ class Graph:
 
         return None
 
+    def Eager(self, start, end):
+        path = []
+        visited = [end]
+        curr = end
+        prev = end
+        while curr != start:
+            next_opts = list(filter(lambda v: v not in visited, adj(curr)))
+            if not next_opts:
+                next_opts = list(filter(lambda v: v != prev, adj(curr)))
+            closest = random.choice(next_opts)
+            path.append(closest)
+            visited.append(closest)
+            prev = curr
+            curr = closest
+
+        path.reverse()
+        return path
+
     def AStar(self, start, end):
         """
         A* implementation
@@ -221,7 +239,8 @@ class Graph:
 
             # Generate children
             children = []
-            for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]:#, (-1, -1), (-1, 1), (1, -1), (1, 1)]:  # Adjacent squares
+            for new_position in [(0, -1), (0, 1), (-1, 0),
+                                 (1, 0)]:  # , (-1, -1), (-1, 1), (1, -1), (1, 1)]:  # Adjacent squares
 
                 # Get node position
                 node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
@@ -255,7 +274,7 @@ class Graph:
                 # Create the f, g, and h values
                 child.g = current_node.g + 1
                 child.h = ((child.position[0] - end_node.position[0]) ** 2) + (
-                            (child.position[1] - end_node.position[1]) ** 2)
+                        (child.position[1] - end_node.position[1]) ** 2)
                 child.f = child.g + child.h
 
                 # Child is already in the open list
@@ -301,8 +320,8 @@ def convert_to_2d(tiles, offset=20):
     """
     tiles2d = []
 
-    for i in range(int(len(tiles)/offset)):
-        tiles2d.append(tiles[int(len(tiles)/offset)*i:int(len(tiles) / offset) * (i+1)-1])
+    for i in range(int(len(tiles) / offset)):
+        tiles2d.append(tiles[int(len(tiles) / offset) * i:int(len(tiles) / offset) * (i + 1) - 1])
 
     return tiles2d
 
@@ -311,8 +330,8 @@ def get_2d_index(tiles, point, offset=20):
     """
     Get x, y of the index in tiles
     """
-    x = int(point/int(len(tiles)/offset))
-    y = point - offset*x
+    x = int(point / int(len(tiles) / offset))
+    y = point - offset * x
     return x, y
 
 
@@ -324,7 +343,7 @@ def convert_path2d_to_indexes(path, tiles, offset=20):
     new_path = []
 
     for (i, j) in path:
-        new_path.append(int(len(tiles)/offset)*i + j)
+        new_path.append(int(len(tiles) / offset) * i + j)
 
     return new_path
 
@@ -353,6 +372,19 @@ def get_roads_2d(tiles):
     return roads
 
 
+def adj(v):
+    adj = []
+    if tiles[v + 1] == 1:
+        adj.append(v + 1)
+    if tiles[v - 1] == 1:
+        adj.append(v - 1)
+    if tiles[v + 20] == 1:
+        adj.append(v + 20)
+    if tiles[v - 20] == 1:
+        adj.append(v - 20)
+    return adj
+
+
 def print_path(path):
     """
     print path to the target
@@ -362,9 +394,7 @@ def print_path(path):
 
 
 if __name__ == '__main__':
-
     tiles2d = convert_to_2d(tiles)
-
 
     # for testing
     # maze = [[0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
@@ -406,7 +436,8 @@ if __name__ == '__main__':
     # print("----")
 
     path = g.UCS(starting_point, prize)
-    print(f"UCS path({len(path)} steps, cost = {len(path) - 1}) from starting point {starting_point} to target point {prize}:")
+    print(
+        f"UCS path({len(path)} steps, cost = {len(path) - 1}) from starting point {starting_point} to target point {prize}:")
     print_path(path)
 
     print("----")
