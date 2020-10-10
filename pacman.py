@@ -3,6 +3,7 @@ from freegames import floor, vector
 import random
 import time
 from graph import Graph
+import tracemalloc
 
 path = Turtle(visible=False)
 writer = Turtle(visible=False)
@@ -113,8 +114,15 @@ def world():
 
     tiles_2d = convert_to_2d(tiles)
     g = Graph(tiles, tiles_2d)
-    # way = g.UCS(pac_raw, can_raw)
+    tracemalloc.start()
+    start = time.time()
+    # way = g.DFS(pac_raw, can_raw)
     way = g.AStar(pac_raw, can_raw)
+    end = time.time()
+    current, peak = tracemalloc.get_traced_memory()
+    print(f"Current memory usage is {current / 10 ** 6}MB; Peak was {peak / 10 ** 6}MB")
+    tracemalloc.stop()
+    print(f"Search time: {end - start}")
     return way
 
 
@@ -160,4 +168,4 @@ for next in way[1:]:
     elif next > prev:
         move(vector(0, -20))
     prev = next
-    time.sleep(0.5)
+    time.sleep(0.3)
