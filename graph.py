@@ -156,7 +156,13 @@ class Graph:
 
         return None
 
-    def Eager(self, start, end):
+    def Greedy(self, start, end):
+        """
+        Greedy algorithm implementation
+        :param start: starting point
+        :param end: point with a prize
+        :return: list of path indexes that were lead from root to the target
+        """
         path = []
         visited = [end]
         curr = end
@@ -368,10 +374,10 @@ if __name__ == '__main__':
 
     print("----")
 
-    path = g.Eager(starting_point, prize)
+    path = g.Greedy(starting_point, prize)
 
     print(
-        f"Eager path({len(path)} steps) from starting point {starting_point} to target point {prize}:")
+        f"Greedy path({len(path)} steps) from starting point {starting_point} to target point {prize}:")
     print_path(path)
 
     print("----")
