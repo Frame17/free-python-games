@@ -102,7 +102,7 @@ def world():
     tracemalloc.start()
     start = time.time()
     # way = g.DFS(pac_raw, can_raw)
-    way = g.Eager(pac_raw, can_raw)
+    way = g.Greedy(pac_raw, can_raw)
     end = time.time()
     current, peak = tracemalloc.get_traced_memory()
     print(f"Current memory usage is {current / 10 ** 6}MB; Peak was {peak / 10 ** 6}MB")
