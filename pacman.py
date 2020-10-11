@@ -70,20 +70,6 @@ def valid(point):
     return point.x % 20 == 0 or point.y % 20 == 0
 
 
-def convert_to_2d(tiles, offset=20):
-    """
-    Convert to 2d array
-    :param tiles: list of tiles
-    :return: 2d array
-    """
-    tiles2d = []
-
-    for i in range(int(len(tiles)/offset)):
-        tiles2d.append(tiles[int(len(tiles)/offset)*i:int(len(tiles) / offset) * (i+1)-1])
-
-    return tiles2d
-
-
 def world():
     global pacman
     "Draw world using path."
@@ -112,8 +98,7 @@ def world():
     path.goto(can_x + 10, can_y + 10)
     path.dot(5, 'white')
 
-    tiles_2d = convert_to_2d(tiles)
-    g = Graph(tiles, tiles_2d)
+    g = Graph(tiles)
     tracemalloc.start()
     start = time.time()
     # way = g.DFS(pac_raw, can_raw)

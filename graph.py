@@ -31,17 +31,16 @@ def add_back_road(path, tile):
 class Graph:
 
     # Constructor
-    def __init__(self, tiles, tiles2d, offset=20):
+    def __init__(self, tiles, offset=20):
         """
         create a graph from the 1d array
         :param tiles: 1d array with tiles
-        :param tiles: 2d array with tiles
         :param offset: row offset
         """
         # default dictionary to store graph
         self.graph = defaultdict(list)
         self.tiles = tiles
-        self.tiles2d = tiles2d
+        self.offset = offset
 
         for (i, tile) in enumerate(tiles):
             # if tile is a wall
@@ -180,10 +179,10 @@ class Graph:
                 return self.position == other.position
 
         # Create start and end node
-        start = get_2d_index(self.tiles, start)
+        # start = get_2d_index(self.tiles, start)
         start_node = Node(None, start)
         start_node.g = start_node.h = start_node.f = 0
-        end = get_2d_index(self.tiles, end)
+        # end = get_2d_index(self.tiles, end)
         end_node = Node(None, end)
         end_node.g = end_node.h = end_node.f = 0
 
@@ -217,22 +216,21 @@ class Graph:
                 while current is not None:
                     path.append(current.position)
                     current = current.parent
-                return convert_path2d_to_indexes(path[::-1], tiles)  # Return reversed path
+                return path[::-1]  # Return reversed path
 
             # Generate children
             children = []
-            for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]:#, (-1, -1), (-1, 1), (1, -1), (1, 1)]:  # Adjacent squares
+            for new_position in [-1, 1, -self.offset, self.offset]:#, (-1, -1), (-1, 1), (1, -1), (1, 1)]:  # Adjacent squares
 
                 # Get node position
-                node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
+                node_position = current_node.position + new_position
 
                 # Make sure within range
-                if node_position[0] > (len(self.tiles2d) - 1) or node_position[0] < 0 or node_position[1] > (
-                        len(self.tiles2d[len(self.tiles2d) - 1]) - 1) or node_position[1] < 0:
+                if node_position > (len(self.tiles) - 1) or node_position < 0:
                     continue
 
                 # Make sure walkable terrain
-                if self.tiles2d[node_position[0]][node_position[1]] == 0:
+                if self.tiles[node_position] == 0:
                     continue
 
                 # Create new node
@@ -254,8 +252,7 @@ class Graph:
 
                 # Create the f, g, and h values
                 child.g = current_node.g + 1
-                child.h = ((child.position[0] - end_node.position[0]) ** 2) + (
-                            (child.position[1] - end_node.position[1]) ** 2)
+                child.h = (child.position - end_node.position) ** 2
                 child.f = child.g + child.h
 
                 # Child is already in the open list
@@ -293,42 +290,6 @@ tiles = [
 
 # 0 is a wall
 
-def convert_to_2d(tiles, offset=20):
-    """
-    Convert to 2d array
-    :param tiles: list of tiles
-    :return: 2d array
-    """
-    tiles2d = []
-
-    for i in range(int(len(tiles)/offset)):
-        tiles2d.append(tiles[int(len(tiles)/offset)*i:int(len(tiles) / offset) * (i+1)-1])
-
-    return tiles2d
-
-
-def get_2d_index(tiles, point, offset=20):
-    """
-    Get x, y of the index in tiles
-    """
-    x = int(point/int(len(tiles)/offset))
-    y = point - offset*x
-    return x, y
-
-
-def convert_path2d_to_indexes(path, tiles, offset=20):
-    """
-    Convert path 2d array to tiles indexes
-    """
-
-    new_path = []
-
-    for (i, j) in path:
-        new_path.append(int(len(tiles)/offset)*i + j)
-
-    return new_path
-
-
 def get_roads(tiles):
     """
     get only roads
@@ -336,21 +297,6 @@ def get_roads(tiles):
     :return: list of index with roads only
     """
     return [i for (i, tile) in enumerate(tiles) if tile == 1]
-
-
-def get_roads_2d(tiles):
-    """
-    get only roads in 2d
-    :param tiles: 2d array list of tiles
-    :return: 2d array of index with roads only
-    """
-    roads = []
-    for i, row in enumerate(tiles):
-        for j, item in enumerate(row):
-            if item == 1:
-                roads.append((i, j))
-
-    return roads
 
 
 def print_path(path):
@@ -363,31 +309,9 @@ def print_path(path):
 
 if __name__ == '__main__':
 
-    tiles2d = convert_to_2d(tiles)
-
-
-    # for testing
-    # maze = [[0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    #         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    #         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    #         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    #         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    #         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    #         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    #         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    #         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
-    #
-    # start = (0, 0)
-    # end = (7, 6)
-    #
-    # g = Graph(tiles, maze)
-    # path = g.AStar(start, end)
-    # print(path)
-
-    g = Graph(tiles, tiles2d)
-
     roads = get_roads(tiles)
+
+    g = Graph(tiles)
 
     # 52, 161 for testing perpose
     starting_point = random.choice(roads)
