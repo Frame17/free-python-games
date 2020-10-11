@@ -156,6 +156,24 @@ class Graph:
 
         return None
 
+    def Eager(self, start, end):
+        path = []
+        visited = [end]
+        curr = end
+        prev = end
+        while curr != start:
+            next_opts = list(filter(lambda v: v not in visited, adj(curr)))
+            if not next_opts:
+                next_opts = list(filter(lambda v: v != prev, adj(curr)))
+            closest = random.choice(next_opts)
+            path.append(closest)
+            visited.append(closest)
+            prev = curr
+            curr = closest
+
+        path.reverse()
+        return path
+
     def AStar(self, start, end):
         """
         A* implementation
@@ -299,6 +317,20 @@ def get_roads(tiles):
     return [i for (i, tile) in enumerate(tiles) if tile == 1]
 
 
+
+
+def adj(v):
+    adj = []
+    if tiles[v + 1] == 1:
+        adj.append(v + 1)
+    if tiles[v - 1] == 1:
+        adj.append(v - 1)
+    if tiles[v + 20] == 1:
+        adj.append(v + 20)
+    if tiles[v - 20] == 1:
+        adj.append(v - 20)
+    return adj
+
 def print_path(path):
     """
     print path to the target
@@ -330,7 +362,16 @@ if __name__ == '__main__':
     # print("----")
 
     path = g.UCS(starting_point, prize)
-    print(f"UCS path({len(path)} steps, cost = {len(path) - 1}) from starting point {starting_point} to target point {prize}:")
+    print(
+        f"UCS path({len(path)} steps, cost = {len(path) - 1}) from starting point {starting_point} to target point {prize}:")
+    print_path(path)
+
+    print("----")
+
+    path = g.Eager(starting_point, prize)
+
+    print(
+        f"Eager path({len(path)} steps) from starting point {starting_point} to target point {prize}:")
     print_path(path)
 
     print("----")
