@@ -5,10 +5,17 @@ import time
 from graph import Graph
 import tracemalloc
 
+state = {'score': 0}
 path = Turtle(visible=False)
 writer = Turtle(visible=False)
 aim = vector(5, 0)
 pacman = None
+ghosts = [
+    [vector(-180, 160), vector(5, 0)],
+    [vector(-180, -160), vector(0, 5)],
+    [vector(100, 160), vector(0, -5)],
+    [vector(100, -160), vector(-5, 0)]
+]
 tiles = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
@@ -87,6 +94,7 @@ def world():
             if tile == 1:
                 path.up()
                 path.goto(x + 10, y + 10)
+                path.dot(2, 'white')
 
     pac_x, pac_y, pac_raw = random_init()
     pacman = vector(pac_x, pac_y)
@@ -102,7 +110,7 @@ def world():
     tracemalloc.start()
     start = time.time()
     # way = g.DFS(pac_raw, can_raw)
-    way = g.Greedy(pac_raw, can_raw)
+    way = g.UCS(pac_raw, can_raw)
     end = time.time()
     current, peak = tracemalloc.get_traced_memory()
     print(f"Current memory usage is {current / 10 ** 6}MB; Peak was {peak / 10 ** 6}MB")
@@ -114,16 +122,48 @@ def world():
 def move(way):
     "Move pacman"
     writer.undo()
+    writer.write(state['score'])
 
     clear()
 
     pacman.move(way)
 
+    index = offset(pacman)
+
+    if tiles[index] == 1:
+        tiles[index] = 2
+        state['score'] += 1
+        x = (index % 20) * 20 - 200
+        y = 180 - (index // 20) * 20
+        square(x, y)
+
     up()
     goto(pacman.x + 10, pacman.y + 10)
     dot(20, 'yellow')
 
+    for point, course in ghosts:
+        if valid(point + course):
+            point.move(course)
+        else:
+            options = [
+                vector(15, 0),
+                vector(-15, 0),
+                vector(0, 15),
+                vector(0, -15),
+            ]
+            plan = random.choice(options)
+            course.x = plan.x
+            course.y = plan.y
+
+        up()
+        goto(point.x + 10, point.y + 10)
+        dot(20, 'red')
+
     update()
+
+    for point, course in ghosts:
+        if abs(pacman - point) < 20:
+            return
 
 def random_init():
     raw_pos = random.randint(0, len(tiles))
@@ -141,6 +181,8 @@ setup(420, 420, 370, 0)
 hideturtle()
 tracer(False)
 writer.goto(160, 160)
+writer.color('white')
+writer.write(state['score'])
 way = world()
 prev = way[0]
 for next in way[1:]:
