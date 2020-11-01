@@ -323,8 +323,6 @@ def get_roads(tiles):
     return [i for (i, tile) in enumerate(tiles) if tile == 1]
 
 
-
-
 def adj(v):
     adj = []
     if tiles[v + 1] == 1:
@@ -336,6 +334,7 @@ def adj(v):
     if tiles[v - 20] == 1:
         adj.append(v - 20)
     return adj
+
 
 def print_path(path):
     """

@@ -3,6 +3,7 @@ from freegames import floor, vector
 import random
 import time
 from graph import Graph
+from minimax import Minimax
 import tracemalloc
 
 state = {'score': 0}
@@ -10,12 +11,16 @@ path = Turtle(visible=False)
 writer = Turtle(visible=False)
 aim = vector(5, 0)
 pacman = None
-ghosts = [
-    [vector(-180, 160), vector(20, 0)],
-    [vector(-180, -160), vector(0, 20)],
-    [vector(100, 160), vector(0, -20)],
-    [vector(100, -160), vector(-20, 0)]
-]
+pacman_raw = None
+# ghosts = [
+#     [vector(-180, 160), vector(20, 0)],
+#     [vector(-180, -160), vector(0, 20)],
+#     [vector(100, 160), vector(0, -20)],
+#     [vector(100, -160), vector(-20, 0)]
+# ]
+num_ghosts = 1 #for now
+ghosts = []
+ghosts_raw = []
 tiles = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
@@ -79,6 +84,7 @@ def valid(point):
 
 def world():
     global pacman
+    global pacman_raw
     "Draw world using path."
     bgcolor('black')
     path.color('blue')
@@ -98,6 +104,7 @@ def world():
 
     pac_x, pac_y, pac_raw = random_init()
     pacman = vector(pac_x, pac_y)
+    pacman_raw = pac_raw
 
     can_x, can_y, can_raw = random_init()
     while can_x == pac_x and can_y == pac_y:  # reinit in case of collision
@@ -106,17 +113,26 @@ def world():
     path.goto(can_x + 10, can_y + 10)
     path.dot(5, 'white')
 
-    g = Graph(tiles)
-    tracemalloc.start()
-    start = time.time()
+    # init ghosts
+    for i in range(num_ghosts):
+        ghost_x, ghost_y, ghost_raw = random_init()
+        while ghost_x == pac_x and ghost_y == pac_y:  # reinit in case of collision
+            ghost_x, ghost_y, ghost_raw = random_init()
+        ghost = vector(ghost_x, ghost_y)
+        ghosts.append(ghost)
+        ghosts_raw.append(ghost_raw)
+
+    # g = Graph(tiles)
+    # tracemalloc.start()
+    # start = time.time()
     # way = g.DFS(pac_raw, can_raw)
-    way = g.UCS(pac_raw, can_raw)
-    end = time.time()
-    current, peak = tracemalloc.get_traced_memory()
-    print(f"Current memory usage is {current / 10 ** 6}MB; Peak was {peak / 10 ** 6}MB")
-    tracemalloc.stop()
-    print(f"Search time: {end - start}")
-    return way
+    # way = g.UCS(pac_raw, can_raw)
+    # end = time.time()
+    # current, peak = tracemalloc.get_traced_memory()
+    # print(f"Current memory usage is {current / 10 ** 6}MB; Peak was {peak / 10 ** 6}MB")
+    # tracemalloc.stop()
+    # print(f"Search time: {end - start}")
+    # return way
 
 
 def move(way):
@@ -165,27 +181,31 @@ def move(way):
         if abs(pacman - point) < 20:
             return
 
+
+def convert_from_raw(raw_pos):
+    # complex high-level mathematics
+    x = (raw_pos % 20) * 20 - 200
+    y = 180 - (raw_pos // 20) * 20
+    return x, y
+
+
 def random_init():
     raw_pos = random.randint(0, len(tiles))
     if tiles[raw_pos] == 0:
         while tiles[raw_pos] != 1:
             raw_pos = (raw_pos + 1) % len(tiles)
 
-    # complex high-level mathematics
-    x = (raw_pos % 20) * 20 - 200
-    y = 180 - (raw_pos // 20) * 20
+    x, y = convert_from_raw(raw_pos)
+
     return x, y, raw_pos
 
 
-setup(420, 420, 370, 0)
-hideturtle()
-tracer(False)
-writer.goto(160, 160)
-writer.color('white')
-writer.write(state['score'])
-way = world()
-prev = way[0]
-for next in way[1:]:
+def is_end():
+    # ghost has eaten the pacman or pacman has eaten all coins
+    return len([ghost for ghost in ghosts if ghost == pacman]) or not len([tile for tile in tiles if tile == 1])
+
+
+def agent_move(prev, next):
     if next == prev + 1:
         move(vector(20, 0))
     elif next == prev - 1:
@@ -194,5 +214,38 @@ for next in way[1:]:
         move(vector(0, 20))
     elif next > prev:
         move(vector(0, -20))
-    prev = next
-    time.sleep(0.3)
+
+
+def play():
+
+    minimax = Minimax(tiles)
+
+    while not is_end():
+        pacman_move = minimax.find_best_move(tiles, pacman_raw, ghosts_raw, True)
+
+        agent_move(pacman_raw, pacman_move)
+
+        for i, ghost_move in enumerate(minimax.find_best_move(tiles, pacman_raw, ghosts_raw, False)):
+            agent_move(ghosts_raw[i], ghost_move)
+
+
+setup(420, 420, 370, 0)
+hideturtle()
+tracer(False)
+writer.goto(160, 160)
+writer.color('white')
+writer.write(state['score'])
+world()
+play()
+# prev = way[0]
+# for next in way[1:]:
+#     if next == prev + 1:
+#         move(vector(20, 0))
+#     elif next == prev - 1:
+#         move(vector(-20, 0))
+#     elif next < prev:
+#         move(vector(0, 20))
+#     elif next > prev:
+#         move(vector(0, -20))
+#     prev = next
+#     time.sleep(0.3)

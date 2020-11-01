@@ -17,13 +17,13 @@ class Minimax:
         """
         return len([tile for tile in tiles if tile == 1]) > 0
 
-    def evaluate(self, tiles, pacman, ghosts):
+    def evaluate(self, tiles, pacman, ghost):
         """
         Evaluation function
         Evaluate the move was made for each agent
         :param tiles: maze
         :param pacman: pacman position
-        :param ghosts: list of ghosts positions
+        :param ghost: ghost position
         :return: +10 if Pacman has won in this move, -10 if ghost has eaten the pacman(pacman lost), 0 otherwise
         """
 
@@ -32,7 +32,7 @@ class Minimax:
             return 10
 
         # ghost has eaten the pacman
-        if len([ghost for ghost in ghosts if ghost == pacman]):
+        if ghost == pacman:
             return -10
 
         # nobody won
@@ -46,13 +46,25 @@ class Minimax:
         :return: coin index
         """
         coin = math.inf
+        min_distance = math.inf
+
+        def convert_from_raw(raw_pos):
+            # complex high-level mathematics
+            x = (raw_pos % 20) * 20 - 200
+            y = 180 - (raw_pos // 20) * 20
+            return x, y
+
+        pac_x, pac_y = convert_from_raw(pacman)
+        pacman_vec = (pac_x, pac_y)
 
         for i, tile in enumerate(tiles):
             if tile == 1:
-                vertical = abs(pacman - i) % 20
-                horizontal = abs(pacman - i)
-                if vertical < coin or horizontal < coin:
+                coin_x, coin_y = convert_from_raw(i)
+                coin_vec = (coin_x, coin_y)
+                distance = math.sqrt(sum([(a - b) ** 2 for a, b in zip(coin_vec, pacman_vec)]))
+                if distance < min_distance:
                     coin = i
+                    min_distance = distance
 
         return coin
 
@@ -79,7 +91,8 @@ class Minimax:
             best = -math.inf
 
             coin = self.closest_coin(tiles, pacman)
-            move = self.g.UCS(pacman, coin)[0]
+            path = self.g.UCS(pacman, coin)
+            move = path[0]
 
             # eat the coin
             if tiles[move] == 1:
@@ -88,7 +101,6 @@ class Minimax:
             pacman = move
             # call minimax
             best = max(best, self.minimax(tiles, pacman, ghost, depth + 1, not is_max))
-
 
             # undo the move
             if tiles[move] == 2:
@@ -100,48 +112,85 @@ class Minimax:
         else:
             best = math.inf
 
-            move = self.g.UCS(ghost, pacman)[0]
+            path = self.g.UCS(ghost, pacman)
+            move = path[0]
             ghost = move
             best = min(best, self.minimax(tiles, pacman, ghost, depth + 1, not is_max))
 
             return best
 
-    def find_best_move(self, tiles, pacman, ghosts):
+    def find_best_move(self, tiles, pacman, ghosts, is_pacman):
         """
         Find best move for the agent
         :param tiles: maze
         :param pacman: pacman position
         :param ghosts: list of ghosts positions
+        :param is_pacman: finding best move as for pacman or not
         :return: best move for the player
         """
 
-        best_val = -math.inf
-        best_move = -math.inf
+        if is_pacman:
+            best_val = -math.inf
+            best_move = -math.inf
 
-        for ghost in ghosts:
-            coin = self.closest_coin(tiles, pacman)
-            move = self.g.UCS(pacman, coin)[0]
+            for ghost in ghosts:
+                coin = self.closest_coin(tiles, pacman)
+                path = self.g.UCS(pacman, coin)
+                move = path[0]
 
-            # eat the coin
-            if tiles[move] == 1:
-                tiles[move] = 2
-            # make the move
-            pacman = move
-            move_val = self.minimax(tiles, pacman, ghost, 0, False)
+                # eat the coin
+                if tiles[move] == 1:
+                    tiles[move] = 2
+                # make the move
+                pacman = move
+                move_val = self.minimax(tiles, pacman, ghost, 0, False)
 
-            # undo the move
-            if tiles[move] == 2:
-                tiles[move] = 1
+                # undo the move
+                if tiles[move] == 2:
+                    tiles[move] = 1
 
-            if move_val > best_val:
-                best_val = move_val
-                best_move = move
+                if move_val > best_val:
+                    best_val = move_val
+                    best_move = move
 
-        return best_move
+            return best_move
+
+        else:
+
+            return [self.g.UCS(ghost, pacman)[0] for ghost in ghosts]
 
 
 
+if __name__ == '__main__':
+    tiles = [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+        0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0,
+        0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+        0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0,
+        0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0,
+        0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+        0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+        0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0,
+        0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0,
+        0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+        0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+        0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0,
+        0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0,
+        0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+        0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ]
 
+    pacman = 103
+    ghosts = [22]
+
+    minimax = Minimax(tiles)
+    pacman_move = minimax.find_best_move(tiles, pacman, ghosts, True)
+    print(pacman_move)
 
 
 
