@@ -86,6 +86,10 @@ class Minimax:
         if score == -10 or score == 10:
             return score
 
+        # limit moves by depth
+        if depth >= 100:
+            return score
+
         # pacman's move
         if is_max:
             best = -math.inf
@@ -191,21 +195,3 @@ if __name__ == '__main__':
     minimax = Minimax(tiles)
     pacman_move = minimax.find_best_move(tiles, pacman, ghosts, True)
     print(pacman_move)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
