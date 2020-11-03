@@ -2,9 +2,7 @@ from turtle import *
 from freegames import floor, vector
 import random
 import time
-from graph import Graph
 from minimax import Minimax
-import tracemalloc
 
 state = {'score': 0}
 path = Turtle(visible=False)
@@ -199,6 +197,10 @@ def play():
 
         for i, ghost_move in enumerate(minimax.find_best_move(tiles, pacman_raw, ghosts_raw, False)):
             agent_move(ghosts_raw[i], ghost_move, False)
+            ghosts_raw[i] = ghost_move
+
+        if pacman_raw in ghosts_raw:
+            break
         time.sleep(0.3)
 
 
