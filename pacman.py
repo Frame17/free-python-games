@@ -106,6 +106,9 @@ def world():
     pacman = vector(pac_x, pac_y)
     pacman_raw = pac_raw
 
+    # eat the coin
+    tiles[pac_raw] = 2
+
     can_x, can_y, can_raw = random_init()
     while can_x == pac_x and can_y == pac_y:  # reinit in case of collision
         can_x, can_y, _ = random_init()
@@ -121,18 +124,6 @@ def world():
         ghost = vector(ghost_x, ghost_y)
         ghosts.append(ghost)
         ghosts_raw.append(ghost_raw)
-
-    # g = Graph(tiles)
-    # tracemalloc.start()
-    # start = time.time()
-    # way = g.DFS(pac_raw, can_raw)
-    # way = g.UCS(pac_raw, can_raw)
-    # end = time.time()
-    # current, peak = tracemalloc.get_traced_memory()
-    # print(f"Current memory usage is {current / 10 ** 6}MB; Peak was {peak / 10 ** 6}MB")
-    # tracemalloc.stop()
-    # print(f"Search time: {end - start}")
-    # return way
 
 
 def move(way):
@@ -217,16 +208,16 @@ def agent_move(prev, next):
 
 
 def play():
-
+    global pacman_raw
     minimax = Minimax(tiles)
-
     while not is_end():
         pacman_move = minimax.find_best_move(tiles, pacman_raw, ghosts_raw, True)
-
         agent_move(pacman_raw, pacman_move)
+        pacman_raw = pacman_move
 
         for i, ghost_move in enumerate(minimax.find_best_move(tiles, pacman_raw, ghosts_raw, False)):
             agent_move(ghosts_raw[i], ghost_move)
+        time.sleep(0.3)
 
 
 setup(420, 420, 370, 0)
@@ -237,15 +228,3 @@ writer.color('white')
 writer.write(state['score'])
 world()
 play()
-# prev = way[0]
-# for next in way[1:]:
-#     if next == prev + 1:
-#         move(vector(20, 0))
-#     elif next == prev - 1:
-#         move(vector(-20, 0))
-#     elif next < prev:
-#         move(vector(0, 20))
-#     elif next > prev:
-#         move(vector(0, -20))
-#     prev = next
-#     time.sleep(0.3)
