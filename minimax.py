@@ -202,6 +202,8 @@ if __name__ == '__main__':
 
         pacman = 103
         ghosts = [22]
+        # pacman = 304
+        # ghosts = [161]
 
         minimax = Minimax(tiles)
         for i in range(10):

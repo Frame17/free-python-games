@@ -106,9 +106,6 @@ def world():
     pacman = vector(pac_x, pac_y)
     pacman_raw = pac_raw
 
-    # eat the coin
-    tiles[pac_raw] = 2
-
     can_x, can_y, can_raw = random_init()
     while can_x == pac_x and can_y == pac_y:  # reinit in case of collision
         can_x, can_y, _ = random_init()
@@ -211,6 +208,7 @@ def play():
     global pacman_raw
     minimax = Minimax(tiles)
     while not is_end():
+        tiles[pacman_raw] = 2
         pacman_move = minimax.find_best_move(tiles, pacman_raw, ghosts_raw, True)
         agent_move(pacman_raw, pacman_move)
         pacman_raw = pacman_move
