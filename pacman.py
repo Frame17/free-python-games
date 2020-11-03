@@ -123,51 +123,33 @@ def world():
         ghosts_raw.append(ghost_raw)
 
 
-def move(way):
-    "Move pacman"
+def move(point, way, is_pacman):
+    """Move point"""
     writer.undo()
     writer.write(state['score'])
 
     clear()
 
-    pacman.move(way)
+    point.move(way)
 
-    index = offset(pacman)
+    if is_pacman:
+        index = offset(point)
 
-    if tiles[index] == 1:
-        tiles[index] = 2
-        state['score'] += 1
-        x = (index % 20) * 20 - 200
-        y = 180 - (index // 20) * 20
-        square(x, y)
+        if tiles[index] == 1:
+            tiles[index] = 2
+            state['score'] += 1
+            x, y = convert_from_raw(index)
+            square(x, y)
 
     up()
-    goto(pacman.x + 10, pacman.y + 10)
-    dot(20, 'yellow')
+    goto(point.x + 10, point.y + 10)
 
-    for point, course in ghosts:
-        if valid(point + course):
-            point.move(course)
-        else:
-            options = [
-                vector(15, 0),
-                vector(-15, 0),
-                vector(0, 15),
-                vector(0, -15),
-            ]
-            plan = random.choice(options)
-            course.x = plan.x
-            course.y = plan.y
-
-        up()
-        goto(point.x + 10, point.y + 10)
+    if is_pacman:
+        dot(20, 'yellow')
+    else:
         dot(20, 'red')
 
     update()
-
-    for point, course in ghosts:
-        if abs(pacman - point) < 20:
-            return
 
 
 def convert_from_raw(raw_pos):
@@ -193,15 +175,17 @@ def is_end():
     return len([ghost for ghost in ghosts if ghost == pacman]) or not len([tile for tile in tiles if tile == 1])
 
 
-def agent_move(prev, next):
+def agent_move(prev, next, is_pacman):
+    x, y = convert_from_raw(prev)
+    point = vector(x, y)
     if next == prev + 1:
-        move(vector(20, 0))
+        move(point, vector(20, 0), is_pacman)
     elif next == prev - 1:
-        move(vector(-20, 0))
+        move(point, vector(-20, 0), is_pacman)
     elif next < prev:
-        move(vector(0, 20))
+        move(point, vector(0, 20), is_pacman)
     elif next > prev:
-        move(vector(0, -20))
+        move(point, vector(0, -20), is_pacman)
 
 
 def play():
@@ -210,11 +194,11 @@ def play():
     while not is_end():
         tiles[pacman_raw] = 2
         pacman_move = minimax.find_best_move(tiles, pacman_raw, ghosts_raw, True)
-        agent_move(pacman_raw, pacman_move)
+        agent_move(pacman_raw, pacman_move, True)
         pacman_raw = pacman_move
 
         for i, ghost_move in enumerate(minimax.find_best_move(tiles, pacman_raw, ghosts_raw, False)):
-            agent_move(ghosts_raw[i], ghost_move)
+            agent_move(ghosts_raw[i], ghost_move, False)
         time.sleep(0.3)
 
 
